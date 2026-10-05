@@ -1,0 +1,24 @@
+{
+  "name": "lab3_web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dan4ik27022008/lab3_web.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Dan4ik27022008/lab3_web/issues"
+  },
+  "homepage": "https://github.com/Dan4ik27022008/lab3_web#readme",
+  "dependencies": {
+    "commander": "^15.0.0"
+  }
+}

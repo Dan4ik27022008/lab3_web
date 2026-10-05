@@ -1,0 +1,54 @@
+[
+  {
+    "book": "Тореодори з васюківки",
+    "author": "Всеволод Нестайко",
+    "publication_year": 1972,
+    "copies": [
+      {
+        "number": 158734,
+        "available": true,
+        "read_history": [
+          {
+            "name": "Кирило",
+            "date_of_granting": 1779360960,
+            "return_date": 1782476520
+          },
+          {
+            "name": "Дар'я",
+            "date_of_granting": 1783064100,
+            "return_date": 1788245040
+          }
+        ]
+      },
+      {
+        "number": 158735,
+        "available": false,
+        "read_history": [
+          {
+            "name": "Денис",
+            "date_of_granting": 1787296560,
+            "return_date": null
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "book": "Я бачу, вас цікавить пітьма",
+    "author": "Ілларіон Павлюк",
+    "publication_year": 2020,
+    "copies": [
+      {
+        "number": 256978,
+        "available": true,
+        "read_history": [
+          {
+            "name": "Кирило",
+            "date_of_granting": 1782476640,
+            "return_date": 1785409680
+          }
+        ]
+      }
+    ]
+  }
+]
