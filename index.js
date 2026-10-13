@@ -107,5 +107,42 @@ program
     });
   });
 
+  // 3. Окреме поле
+  program
+  .command('field <title> <path>')
+  .description('Показати значення окремого поля книги (можна використовувати точкову нотацію, напр., copies.0.available)')
+  .action((title, path) => {
+    const data = readJSON(program.opts().file);
+    const book = data.find(b => b.book.toLowerCase() === title.toLowerCase());
+    
+    if (!book) {
+      program.error(`Помилка: Книгу з назвою "${title}" не знайдено.`);
+    }
+
+    // Розбиває шлях на масив ключів ("copies.0.available" -> ["copies", "0", "available"])
+    const keys = path.split('.');
+    let current = book;
+
+    // Послідовно переходить по кожному ключу
+    for (const key of keys) {
+      // Якщо на якомусь етапі натрапить на null/undefined або ключа не існує — це помилка
+      if (current === null || typeof current !== 'object' || !(key in current)) {
+        program.error(`Помилка: Шлях "${path}" (не знайдено ключ "${key}") відсутній у книзі.`);
+      }
+      current = current[key];
+    }
+
+    if (current === null) {
+      // Якщо результат є null
+      console.log('null');
+    } else if (typeof current === 'object') {
+      // Якщо результат є об'єктом або масивом
+      console.log(JSON.stringify(current, null, 2));
+    } else {
+      // Якщо це рядок, число або булеве значення
+      console.log(current);
+    }
+  });
+
 // Парсинг аргументів
 program.parse();
