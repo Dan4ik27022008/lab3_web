@@ -20,6 +20,8 @@ function readJSON(path) {
   }
 }
 
+// 3 Частина
+
 // 1. Перелік
 program
   .command('list')
@@ -73,7 +75,7 @@ program
       console.log(`----------------------------------------`);
       console.log(`  Книга:  "${book.book}"`);
       console.log(`  Статус: ${specificCopy.available ? 'Доступний' : 'Недоступний'}`);
-      console.log(`  Історія видач (${specificCopy.read_history.length} записів):`);
+      console.log(`  Історія видач:`);
       
       if (specificCopy.read_history.length === 0) {
         console.log(`    Історія порожня.`);
@@ -82,7 +84,7 @@ program
           // Переведення часу з UNIX timestamp в дату
           const grantDate = new Date(h.date_of_granting * 1000).toLocaleDateString('uk-UA');
           const returnDate = h.return_date ? new Date(h.return_date * 1000).toLocaleDateString('uk-UA') : 'ще не повернуто';
-          console.log(`\n    - Читач: ${h.name} \n    Видано:    ${grantDate}\n    Повернуто: ${returnDate}`);
+          console.log(`\n  - Читач: ${h.name} \n    Видано:    ${grantDate}\n    Повернуто: ${returnDate}`);
         });
       }
       return;
@@ -103,12 +105,11 @@ program
       const status = copy.available ? 'Доступний' : 'Недоступний';
       const historyCount = copy.read_history.length;
       console.log(`  ${index + 1}. №${copy.number} — ${status}`);
-      console.log(`     Історія видач: записів ${historyCount}`);
     });
   });
 
-  // 3. Окреме поле
-  program
+// 3. Окреме поле
+program
   .command('field <title> <path>')
   .description('Показати значення окремого поля книги (можна використовувати точкову нотацію, напр., copies.0.available)')
   .action((title, path) => {
@@ -141,6 +142,105 @@ program
     } else {
       // Якщо це рядок, число або булеве значення
       console.log(current);
+    }
+  });
+
+// 4 Частина
+
+// Пошук книг автора за частиною імені
+program
+  .command('author <name>')
+  .description('Пошук книг автора за частиною імені')
+  .action((name) => {
+    const data = readJSON(program.opts().file);
+    // Фільтрує масив, перевіряючи чи містить поле author введений рядок
+    const result = data.filter(b => b.author.toLowerCase().includes(name.toLowerCase()));
+    
+    if (result.length === 0) {
+      program.error(`Помилка: Книг авторів, чиє ім'я містить "${name}", не знайдено.`);
+    }
+    
+    console.log(`\nЗнайдені книги (запит: "${name}"):`);
+    console.log(`----------------------------------------`);
+    
+    result.forEach((item, index) => {
+      console.log(`${index + 1}. ${item.author} - "${item.book}"`);
+    });
+  });
+
+// Примірники книги з можливістю показати лише доступні
+program
+  .command('copies <title>')
+  .description('Показати примірники книги')
+  .option('-a, --available', 'показати лише доступні примірники')
+  .action((title, options) => {
+    const data = readJSON(program.opts().file);
+    const book = data.find(b => b.book.toLowerCase() === title.toLowerCase());
+    
+    if (!book) {
+      program.error(`Помилка: Книгу "${title}" не знайдено.`);
+    }
+    
+    let copies = book.copies;
+    // Якщо передано прапорець -a, фільтрує масив, залишаючи лише ті, де available === true
+    if (options.available) {
+      copies = copies.filter(c => c.available === true);
+    }
+    
+    if (copies.length === 0) {
+      console.log(`Для книги "${book.book}" немає примірників, що відповідають критеріям.`);
+      return;
+    }
+    
+    console.log(`\nПримірники книги "${book.book}":`);
+    console.log(`----------------------------------------`);
+    copies.forEach(c => {
+      console.log(`- №${c.number}: ${c.available ? 'Доступний' : 'Недоступний (виданий)'}`);
+    });
+  });
+
+// Історія видач конкретного примірника за його номером
+program
+  .command('history <number>')
+  .description('Історія видач конкретного примірника за його номером')
+  .action((number) => {
+    const data = readJSON(program.opts().file);
+    const copyNumParsed = parseInt(number, 10);
+    
+    if (isNaN(copyNumParsed)) {
+      program.error('Помилка: Номер примірника має бути числом.');
+    }
+
+    let foundCopy = null;
+    let foundBook = null;
+
+    // Перебирає всі книги та їх примірники, щоб знайти номер
+    for (const book of data) {
+      const copy = book.copies.find(c => c.number === copyNumParsed);
+      if (copy) {
+        foundCopy = copy;
+        foundBook = book.book;
+        break;
+      }
+    }
+
+    if (!foundCopy) {
+      program.error(`Помилка: Примірник з номером ${copyNumParsed} не знайдено в жодній книзі.`);
+    }
+
+    console.log(`\nКнига: "${foundBook}"`);
+    console.log(`Історія видач примірника №${copyNumParsed}:`);
+    console.log(`----------------------------------------`);
+    
+    if (foundCopy.read_history.length === 0) {
+      console.log('  Історія порожня.');
+    } else {
+      foundCopy.read_history.forEach(h => {
+        // Конвертація часу з UNIX timestamp у дату
+        const grantDate = new Date(h.date_of_granting * 1000).toLocaleDateString('uk-UA');
+        const returnDate = h.return_date ? new Date(h.return_date * 1000).toLocaleDateString('uk-UA') : 'ще не повернуто';
+        console.log(`  - Читач: ${h.name} \n    Видано:    ${grantDate}\n    Повернуто: ${returnDate}\n`);
+      });
     }
   });
 
